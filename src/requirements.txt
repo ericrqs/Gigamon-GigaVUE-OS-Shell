@@ -1,0 +1,2 @@
+cloudshell-shell-core>=2.3.0,<2.4.0
+jsonpickle==0.9.3
