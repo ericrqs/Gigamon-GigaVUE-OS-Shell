@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <DataModelInfo xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.qualisystems.com/ResourceManagement/DataModelSchema.xsd">
   <Attributes>
-    <AttributeInfo Name="User" Type="String" DefaultValue="" IsReadOnly="false">
-      <Rules>
-        <Rule Name="Configuration" />
-      </Rules>
-    </AttributeInfo>
+    <!--<AttributeInfo Name="User" Type="String" DefaultValue="" IsReadOnly="false">-->
+      <!--<Rules>-->
+        <!--<Rule Name="Configuration" />-->
+      <!--</Rules>-->
+    <!--</AttributeInfo>-->
     <AttributeInfo Name="Password" Type="Password" DefaultValue="3M3u7nkDzxWb0aJ/IZYeWw==" IsReadOnly="false">
       <Rules>
         <Rule Name="Configuration" />

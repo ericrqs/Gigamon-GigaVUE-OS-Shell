@@ -1,6 +1,6 @@
 import re
 
-from cloudshell.shell.core.interfaces.save_restore import OrchestrationSaveResult
+# from cloudshell.shell.core.interfaces.save_restore import OrchestrationSaveResult
 # from cloudshell.shell.core.interfaces.save_restore import OrchestrationSavedArtifact
 # from cloudshell.shell.core.interfaces.save_restore import OrchestrationSavedArtifactInfo
 # from cloudshell.shell.core.interfaces.save_restore import OrchestrationRestoreRules
@@ -26,39 +26,52 @@ class GigamonDriver (ResourceDriverInterface):
         """
         ctor must be without arguments, it is created with reflection at run time
         """
+        self.ssh = None
         self.channel = None
         self.fakedata = None
+        self.log('__init__ called')
+
+    def log(self, message):
+        with open(r'c:\programdata\qualisystems\gigamon.log', 'a') as f:
+            f.write(message+'\r\n')
 
     def ssh_connect(self, host, port, username, password, prompt_regex):
         if self.fakedata:
             return
-        ssh = paramiko.SSHClient()
-        ssh.load_system_host_keys()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(host,
+        self.log('connect %s %d %s %s %s' % (host, port, username, password, prompt_regex))
+        self.ssh = paramiko.SSHClient()
+        self.ssh.load_system_host_keys()
+        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.ssh.connect(host,
                     port=port,
                     username=username,
                     password=password,
                     look_for_keys=True)
-        self.channel = ssh.invoke_shell()
+        self.channel = self.ssh.invoke_shell()
         self.ssh_read(prompt_regex)  # eat banner
 
     def ssh_write(self, command):
         if self.fakedata:
             print command
             return
+        self.log('sending: <<<' + command + '>>>')
         self.channel.send(command)
+        self.log('send complete')
 
     def ssh_read(self, prompt_regex):
         if self.fakedata:
             return
         rv = ''
+        self.log('read...')
         while True:
-            self.channel.settimeout(30)
+            # self.channel.settimeout(30)
+            self.log('recv')
             r = self.channel.recv(2048)
+            self.log('recv returned: <<<' + str(r) + '>>>')
             if r:
                 rv += r
             if not r or len(re.findall(prompt_regex, rv)) > 0:
+                self.log('read complete: <<<' + str(rv) + '>>>')
                 return rv
 
     def ssh_command(self, command, prompt_regex):
@@ -80,14 +93,16 @@ class GigamonDriver (ResourceDriverInterface):
         :param InitCommandContext context: the context the command runs on
         """
         if not self.fakedata:
-            api = CloudShellAPISession(context.connectivity.serverAddress,
-                                       token_id=context.connectivity.token,
-                                       port=context.connectivity.tsAPIPort)
+            self.log(str(dir(context)))
+            self.log(str(dir(context.connectivity)))
+            api = CloudShellAPISession(context.connectivity.server_address,
+                                       token_id=context.connectivity.admin_auth_token,
+                                       port=context.connectivity.cloudshell_api_port)
 
             self.ssh_connect(context.resource.address,
                              22,
                              context.resource.attributes['User'],
-                             api.DecryptPassword(context.resource.attributes['Password']),
+                             api.DecryptPassword(context.resource.attributes['Password']).Value,
                              '>')
             e = self.ssh_command('enable', '[#:]')
             if ':' in e:
