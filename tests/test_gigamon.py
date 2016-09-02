@@ -130,7 +130,41 @@ cc2   yes     up           HC2-Main-Board  132-00AN      1AN0-00CB   B1-25
 
 
     ''',
-    'show port': '''
+    'show port': '''HB1-C01-38 # show port
+========================================================================================================================
+                                 Link    Xcvr Pwr (dBm)  Pwr   Xcvr         Auto                  Force  Port
+Port      Type         Admin     Status  (min     max )  THld  Type         Neg    Speed  Duplex  LnkUp  Relay    Dscvry
+------------------------------------------------------------------------------------------------------------------------
+1/1/e1    gs           enabled   up                   -        N/A          N/A    10000  full    off    N/A
+1/1/g1    network      disabled  -                    -        COPPER       on         -  -       off    N/A      off
+1/1/g2    network      disabled  -                    -        COPPER       on         -  -       off    N/A      off
+1/1/g3    network      disabled  -                    -        COPPER       on         -  -       off    N/A      off
+1/1/g4    network      disabled  -                    -        COPPER       on         -  -       off    N/A      off
+1/1/g5    network      disabled  -                    -        COPPER       on         -  -       off    N/A      off
+1/1/g6    network      disabled  -                    -        COPPER       on         -  -       off    N/A      off
+1/1/g7    network      disabled  -                    -        COPPER       on         -  -       off    N/A      off
+1/1/g8    network      disabled  -                    -        COPPER       on         -  -       off    N/A      off
+1/1/g9    network      disabled  -                    -        none         on         -  -       off    N/A      off
+1/1/g10   network      disabled  -                    -        none         on         -  -       off    N/A      off
+1/1/g11   network      disabled  -                    -        none         on         -  -       off    N/A      off
+1/1/g12   network      disabled  -                    -        none         on         -  -       off    N/A      off
+1/1/g13   network      disabled  -                    -        none         on         -  -       off    N/A      off
+1/1/g14   network      disabled  -                    -        none         on         -  -       off    N/A      off
+1/1/g15   network      disabled  -                    -        none         on         -  -       off    N/A      off
+1/1/g16   network      disabled  -                    -        none         on         -  -       off    N/A      off
+1/1/x1    network      disabled  -                    -        none         off        -  -       off    N/A      off
+1/1/x2    network      disabled  -                    -        none         off        -  -       off    N/A      off
+1/1/x3    network      disabled  -                    -        none         off        -  -       off    N/A      off
+1/1/x4    network      disabled  -                    -        none         off        -  -       off    N/A      off
+------------------------------------------------------------------------------------------------------------------------
+
+Legend : Power THld :  ++ High Alarm    + High Alert    -- Low Alarm    - Low Alert
+
+
+HB1-C01-38 #
+''',
+
+    'show port2': '''
 HC2-C01-35 # show port
 ===============================================================================================================================================
                                                 Link    Xcvr Pwr (dBm)  Pwr       Xcvr         Auto                      Force  Port
@@ -242,39 +276,39 @@ inv = d.get_inventory(None)
 
 for attr in inv.attributes:
     print '%s: %s = %s' % (attr.relative_address, attr.attribute_name, attr.attribute_value)
-
-savefolders = [
-    'ftp://user:password@server/a/b/c',
-    'tftp://server/a/b/c',
-    'server/a/b/c',
-    'c',
-]
-
-savedfiles = []
-
-for savefolder in savefolders:
-    savedfiles.append(d.save(None, None, 'running', savefolder, 'vrf'))
-    try:
-        savedfiles.append(d.save(None, None, 'startup', savefolder, 'vrf'))
-    except:
-        print 'Got expected exception'
-
-
-for savedfile in savedfiles:
-    d.restore(None, None, savedfile, 'override', 'running', 'vrf')
-    try:
-        d.restore(None, None, savedfile, 'append', 'running', 'vrf')
-    except:
-        print 'Got expected exception'
-
-firmware_path_host = [
-    ('a/b/c', 'host'),
-    ('ftp://user:password@server/a/b/c/f.bin', ''),
-    ('tftp://server/a/b/c/g.bin', ''),
-]
-
-for path, host in firmware_path_host:
-    d.load_firmware(None, None, path, host)
+#
+# savefolders = [
+#     'ftp://user:password@server/a/b/c',
+#     'tftp://server/a/b/c',
+#     'server/a/b/c',
+#     'c',
+# ]
+#
+# savedfiles = []
+#
+# for savefolder in savefolders:
+#     savedfiles.append(d.save(None, None, 'running', savefolder, 'vrf'))
+#     try:
+#         savedfiles.append(d.save(None, None, 'startup', savefolder, 'vrf'))
+#     except:
+#         print 'Got expected exception'
+#
+#
+# for savedfile in savedfiles:
+#     d.restore(None, None, savedfile, 'override', 'running', 'vrf')
+#     try:
+#         d.restore(None, None, savedfile, 'append', 'running', 'vrf')
+#     except:
+#         print 'Got expected exception'
+#
+# firmware_path_host = [
+#     ('a/b/c', 'host'),
+#     ('ftp://user:password@server/a/b/c/f.bin', ''),
+#     ('tftp://server/a/b/c/g.bin', ''),
+# ]
+#
+# for path, host in firmware_path_host:
+#     d.load_firmware(None, None, path, host)
 
 # class TestGigamonDriver(unittest.TestCase):
 #

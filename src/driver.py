@@ -107,7 +107,8 @@ class GigamonDriver (ResourceDriverInterface):
             e = self.ssh_command('enable', '[#:]')
             if ':' in e:
                 self.ssh_command(api.DecryptPassword(context.resource.attributes['Enable Password']).Value, '# ')
-        self.ssh_command('terminal length 999', '# ')
+        self.ssh_command('cli session terminal type dumb', '# ')
+        self.ssh_command('cli session terminal length 999', '# ')
 
     # <editor-fold desc="Networking Standard Commands">
     def restore(self, context, cancellation_context, path, restore_method, configuration_type, vrf_management_name):
@@ -413,7 +414,10 @@ class GigamonDriver (ResourceDriverInterface):
                 attributes.append(AutoLoadAttribute(cardaddr, "Serial Number", d['serial_num']))
 
         o = self.ssh_command('show port', '# ')
+        o = o.replace('\r', '')
+        # self.log('o1=<<<' + o + '>>>')
         o = '\n'.join(o.split('----\n')[1:]).split('\n----')[0]
+        # self.log('o2=<<<' + o + '>>>')
         for portline in o.split('\n'):
             m = re.match(r'(?P<address>\S+)\s+'
                          r'(?P<type>\S+)\s+'
@@ -430,19 +434,35 @@ class GigamonDriver (ResourceDriverInterface):
                          r'(?P<discovery>\S*)',
                          portline)
             if not m:
-                raise Exception('Failed to parse "show port" data: Line: <<<%s>>> All output: <<<%s>>>' % (portline, o))
+                m = re.match(r'(?P<address>\S+)\s+'
+                             r'(?P<type>\S+)\s+'
+                             r'(?P<admin_enabled>enabled|disabled)\s+'
+                             r'(?P<link_status>down|up|-)\s+'
+                             r'(?P<min_max_thld_power>[-0-9. ]+)\s+'
+                             r'(?P<xcvr_type>.+)\s+'
+                             r'(?P<auto_neg>on|off|N/A)\s+'
+                             r'(?P<speed>[-0-9]+)\s+'
+                             r'(?P<duplex>\S+)\s+'
+                             r'(?P<force_up>on|off)\s+'
+                             r'(?P<port_relay>\S+)\s*'
+                             r'(?P<discovery>\S*)',
+                             portline)
+                if not m:
+                    self.log('regex failure on line <<<' + portline + '>>>')
+                    continue
+                # raise Exception('Failed to parse "show port" data: Line: <<<%s>>> All output: <<<%s>>>' % (portline, o))
 
             d = m.groupdict()
 
             portaddr = d['address']
             portnum = portaddr.split('/')[-1]
-
+            self.log('Port ' + portaddr)
             sub_resources.append(AutoLoadResource(model='Generic Port',
                                                   name='Port ' + portnum,
-                                                  relative_address=portnum))
+                                                  relative_address=portaddr))
 
             attributes.append(AutoLoadAttribute(portaddr, "Port Description",
-                                                '%s - %s - %s' % (d['type'], d['xcvr_type'], d['alias'])))
+                                                '%s - xcvr %s - %s' % (d['type'].strip(), d['xcvr_type'].strip(), d.get('alias', 'noalias'))))
             if re.match(r'[0-9]+', d['speed']):
                 attributes.append(AutoLoadAttribute(portaddr, "Bandwidth", 
                                                     d['speed']))
